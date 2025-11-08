@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Logo">
+  <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#5ad4ff"/><stop offset="1" stop-color="#69f0ae"/></linearGradient></defs>
+  <rect width="256" height="256" rx="48" fill="#0b0c10"/>
+  <g transform="translate(128 128)">
+    <circle r="86" fill="none" stroke="url(#g)" stroke-width="14"/>
+    <path d="M-38 -10 L0 -70 L38 -10 L0 70 Z" fill="url(#g)" opacity=".9"/>
+  </g>
+</svg>

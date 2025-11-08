@@ -1,1 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>XDR & SIEM with Wazuh — Guided Lab (GUI App)</title>
+  <meta name="description" content="Interactive step-by-step lab with GUI-like navigation, screenshots, and issue solver." />
+  <meta name="theme-color" content="#0b0f14" />
+  <meta property="og:title" content="XDR & SIEM with Wazuh — Guided Lab" />
+  <meta property="og:description" content="Interactive step-by-step lab with GUI-like navigation, screenshots, and issue solver." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="assets/logo.svg" />
+  <link rel="stylesheet" href="styles.css" />
+  <script>
+    // Minimal CSP-friendly helpers available early
+    window.__APP_META__ = { version: "1.0.0" };
+  </script>
+  <script defer src="data.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+<noscript>
+  <div class="noscript-warning" role="alert">
+    This app needs JavaScript to run. Please enable JavaScript and reload.
+  </div>
+</noscript>
 
+<header class="site-header" role="banner">
+  <div class="brand">
+    <img src="assets/logo.svg" alt="" class="logo" />
+    <div>
+      <h1>XDR &amp; SIEM with Wazuh — Guided Lab</h1>
+      <p class="subtitle">GUI-like workflow: steps, checklists, commands &amp; troubleshooting</p>
+    </div>
+  </div>
+  <div class="header-actions">
+    <label class="search" aria-label="Search steps and issues">
+      <input id="search" type="search" placeholder="Search steps or fixes…" aria-label="Search" autocomplete="off" />
+      <button id="clearSearch" class="icon-btn" aria-label="Clear search" title="Clear search">✕</button>
+    </label>
+
+    <button id="themeToggle" class="btn ghost" aria-label="Toggle theme" title="Toggle dark/light">🌗</button>
+
+    <!-- Keep your original PDF path if you’ve placed it there; adjust filename if needed -->
+    <a class="btn outline"
+       href="./assets/pdf/My-Private-XDR-SIEM-Simulation-with-Wazuh.pdf" download>Download PDF</a>
+  </div>
+</header>
+
+<main class="layout" role="main">
+  <aside class="sidebar" aria-label="Steps">
+    <div class="progress" aria-label="Overall progress">
+      <div class="progress-bar" aria-live="polite"><span id="progressPct">0%</span></div>
+    </div>
+    <ol id="stepList" class="steps" aria-live="polite" aria-busy="false"></ol>
+    <div class="sidebar-actions">
+      <button id="resetProgress" class="btn tiny danger" title="Clear saved progress">Reset Progress</button>
+    </div>
+  </aside>
+
+  <article class="panel" id="panel" aria-busy="false">
+    <header class="panel-header">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <span id="crumbSection">—</span> / <strong id="crumbTitle">—</strong>
+      </nav>
+      <div class="nav-buttons">
+        <button id="prevBtn" class="btn ghost" disabled aria-label="Go to previous step">← Back</button>
+        <button id="nextBtn" class="btn" aria-label="Go to next step">Next →</button>
+      </div>
+    </header>
+
+    <section class="step" id="step" aria-live="polite">
+      <h2 id="stepTitle">Loading…</h2>
+      <p id="stepIntro" class="muted"></p>
+
+      <div class="media">
+        <img id="stepImage" src="" alt="Step screenshot" />
+        <div class="media-caption" id="stepCaption" aria-live="polite"></div>
+      </div>
+
+      <div id="checklist" class="card checklist">
+        <h3>Checklist</h3>
+        <ul id="checklistItems"></ul>
+        <div class="checklist-actions">
+          <label class="switch">
+            <input id="stepDone" type="checkbox" />
+            <span>Mark step complete</span>
+          </label>
+        </div>
+      </div>
+
+      <div id="commands" class="card">
+        <div class="card-header-row">
+          <h3>Commands</h3>
+          <button id="copyAllCommands" class="btn tiny ghost" title="Copy all commands in this step">Copy all</button>
+        </div>
+        <div id="commandBlocks"></div>
+      </div>
+
+      <div id="notes" class="card">
+        <h3>Notes</h3>
+        <div id="notesBody"></div>
+      </div>
+
+      <div id="issues" class="card issues">
+        <div class="issues-header">
+          <h3>Issue Solver</h3>
+          <input id="issueSearch" type="search" placeholder="Type a symptom… e.g., 'dashboard not loading'" aria-label="Search issues" autocomplete="off" />
+        </div>
+        <div id="issueList" class="accordion"></div>
+      </div>
+    </section>
+  </article>
+</main>
+
+<footer class="site-footer">
+  <span>&copy; <span id="year"></span> Saide Hossain</span>
+  <span>Static app for GitHub Pages.</span>
+  <span class="app-version">v<span id="appVersion"></span></span>
+</footer>
+
+<!-- Templates -->
+<template id="cmdTpl">
+  <details class="code-block">
+    <summary>
+      <span class="cmd-title"></span>
+      <button class="copy" type="button" aria-label="Copy command">Copy</button>
+    </summary>
+    <pre><code class="code"></code></pre>
+  </details>
+</template>
+
+<template id="issueTpl">
+  <details>
+    <summary>
+      <span class="issue-title"></span>
+      <span class="severity" aria-label="Severity"></span>
+    </summary>
+    <div class="issue-body"></div>
+  </details>
+</template>
+
+<!-- App chrome: toasts & modal -->
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<dialog id="helpDialog" aria-labelledby="helpTitle">
+  <header class="dialog-header">
+    <h2 id="helpTitle">Shortcuts & Tips</h2>
+    <form method="dialog"><button class="icon-btn" aria-label="Close">✕</button></form>
+  </header>
+  <div class="dialog-body">
+    <ul class="keymap">
+      <li><kbd>J</kbd>/<kbd>K</kbd> — Next/Previous step</li>
+      <li><kbd>Ctrl</kbd> + <kbd>F</kbd> — Browser find (page)</li>
+      <li>Search bars filter steps/issues live</li>
+      <li>Use “Copy all” to grab every command in the step</li>
+      <li>Export/Import lets you move progress across devices</li>
+    </ul>
+  </div>
+</dialog>
+
+<script>
+  // Lightweight footer init without touching your app.js
+  (function () {
+    const yearEl = document.getElementById('year');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+    const verEl = document.getElementById('appVersion');
+    if (verEl) verEl.textContent = (window.__APP_META__ && window.__APP_META__.version) || '1.0.0';
+
+    const helpBtn = document.getElementById('helpBtn');
+    const dlg = document.getElementById('helpDialog');
+    helpBtn?.addEventListener('click', () => {
+      dlg?.showModal?.();
+      helpBtn.setAttribute('aria-expanded', 'true');
+    });
+    dlg?.addEventListener('close', () => {
+      helpBtn?.setAttribute('aria-expanded', 'false');
+    });
+  })();
+</script>
+</body>
+</html>
